@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>赤ちゃん週数アプリ 🌸</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --pink-deep:   #e8829a;
+    --pink-mid:    #f4a6bb;
+    --pink-light:  #fce4ec;
+    --beige:       #fdf6f0;
+    --beige-dark:  #f5e6d8;
+    --brown-soft:  #c49a84;
+    --text-main:   #5c3d4e;
+    --text-sub:    #9b7287;
+    --white:       #ffffff;
+    --shadow:      rgba(220,150,170,0.25);
+  }
+
+  body {
+    font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+    background: linear-gradient(160deg, #fce4ec 0%, #fdf6f0 50%, #fce4ec 100%);
+    min-height: 100vh;
+    color: var(--text-main);
+    padding-bottom: 40px;
+  }
+
+  /* ─── HEADER ─── */
+  .app-header {
+    background: linear-gradient(135deg, var(--pink-deep), #d4789a);
+    padding: 20px 16px 24px;
+    text-align: center;
+    position: relative;
+    border-radius: 0 0 32px 32px;
+    box-shadow: 0 4px 20px var(--shadow);
+  }
+  .app-header h1 {
+    font-size: 1.4rem;
+    color: white;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  }
+  .app-header .subtitle {
+    color: rgba(255,255,255,0.85);
+    font-size: 0.78rem;
+    margin-top: 4px;
+    letter-spacing: 0.08em;
+  }
+  .header-deco {
+    position: absolute;
+    top: 10px; right: 14px;
+    font-size: 1.6rem;
+    opacity: 0.6;
+  }
+
+  /* ─── WEEK SELECTOR ─── */
+  .week-selector-wrap {
+    padding: 20px 16px 0;
+  }
+  .week-selector-card {
+    background: white;
+    border-radius: 20px;
+    padding: 18px 20px;
+    box-shadow: 0 4px 18px var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .week-label {
+    font-size: 0.8rem;
+    color: var(--text-sub);
+    font-weight: 600;
+    white-space: nowrap;
+    letter-spacing: 0.05em;
+  }
+  .week-display {
+    flex: 1;
+    text-align: center;
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: var(--pink-deep);
+    line-height: 1;
+  }
+  .week-display span {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-sub);
+  }
+  .nav-btn {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, var(--pink-mid), var(--pink-deep));
+    color: white;
+    font-size: 1.3rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 10px rgba(228,130,154,0.4);
+    transition: transform 0.15s, box-shadow 0.15s;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .nav-btn:active { transform: scale(0.92); box-shadow: 0 1px 6px rgba(228,130,154,0.3); }
+  .nav-btn:disabled { opacity: 0.35; cursor: default; transform: none; }
+
+  /* Progress dots */
+  .progress-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 0 16px;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--beige-dark);
+    transition: all 0.3s;
+  }
+  .dot.active {
+    background: var(--pink-deep);
+    width: 24px;
+    border-radius: 4px;
+  }
+
+  /* ─── FETUS CARD ─── */
+  .fetus-card {
+    margin: 16px 16px 0;
+    background: white;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 4px 18px var(--shadow);
+  }
+  .fetus-header {
+    background: linear-gradient(135deg, #fce4ec, #fdf6f0);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .fetus-svg-wrap {
+    width: 100px; height: 100px;
+    background: radial-gradient(circle at 40% 40%, rgba(255,255,255,0.9), rgba(252,228,236,0.5));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 12px rgba(232,130,154,0.2);
+  }
+  .fetus-svg-wrap svg { width: 72px; height: 72px; }
+  .fetus-info { flex: 1; }
+  .fetus-week-label {
+    font-size: 0.75rem;
+    color: var(--text-sub);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .fetus-size-text {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--pink-deep);
+    margin: 4px 0 2px;
+    line-height: 1.3;
+  }
+  .fetus-mm {
+    font-size: 0.78rem;
+    color: var(--text-sub);
+    font-weight: 500;
+  }
+  .fetus-desc {
+    padding: 14px 20px 18px;
+    font-size: 0.88rem;
+    color: var(--text-sub);
+    line-height: 1.65;
+    border-top: 1px dashed var(--beige-dark);
+  }
+
+  /* ─── INFO CARDS ─── */
+  .section-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--text-sub);
+    padding: 18px 16px 8px;
+    text-transform: uppercase;
+  }
+  .info-card {
+    margin: 0 16px 14px;
+    background: white;
+    border-radius: 20px;
+    padding: 16px 18px;
+    box-shadow: 0 4px 16px var(--shadow);
+  }
+  .info-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 12px;
+  }
+  .info-card-title .icon-badge {
+    width: 30px; height: 30px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .badge-health { background: #fce4ec; }
+  .badge-food   { background: #e8f5e9; }
+
+  .advice-item {
+    display: flex;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--beige-dark);
+    align-items: flex-start;
+  }
+  .advice-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .advice-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--pink-mid), var(--pink-deep));
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .badge-food-num {
+    background: linear-gradient(135deg, #a5d6a7, #66bb6a) !important;
+  }
+  .advice-text {
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: var(--text-main);
+  }
+  .advice-text strong {
+    color: var(--pink-deep);
+    font-weight: 700;
+  }
+  .food-text strong {
+    color: #5a9e5f;
+  }
+
+  /* ─── INPUT MODE ─── */
+  .input-toggle-wrap {
+    text-align: center;
+    margin-top: 4px;
+  }
+  .input-toggle {
+    background: none; border: none;
+    color: var(--text-sub);
+    font-size: 0.78rem;
+    text-decoration: underline;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .week-input-row {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .week-input-row.visible { display: flex; }
+  .week-select {
+    width: 100%;
+    max-width: 200px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    border: 2px solid var(--pink-mid);
+    font-size: 1.1rem;
+    color: var(--text-main);
+    background: white;
+    text-align: center;
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+  }
+
+  /* ─── ANIMATION ─── */
+  .fetus-svg-wrap svg {
+    animation: heartbeat 2s ease-in-out infinite;
+    transform-origin: center;
+  }
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+  }
+  .fade-in {
+    animation: fadeIn 0.4s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── FOOTER ─── */
+  .app-footer {
+    text-align: center;
+    padding: 24px 16px 10px;
+    font-size: 0.72rem;
+    color: var(--brown-soft);
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="app-header">
+  <div class="header-deco">🌸</div>
+  <h1>🍼 赤ちゃんの成長記録</h1>
+  <div class="subtitle">妊娠週数アプリ</div>
+</div>
+
+<!-- WEEK SELECTOR -->
+<div class="week-selector-wrap">
+  <div class="week-selector-card">
+    <button class="nav-btn" id="prevBtn" onclick="changeWeek(-1)">‹</button>
+    <div style="flex:1; text-align:center;">
+      <div class="week-label">今の妊娠週数</div>
+      <div class="week-display" id="weekDisplay">8<span> 週</span></div>
+      <div class="input-toggle-wrap">
+        <button class="input-toggle" onclick="toggleInput()">週数を直接選ぶ ▾</button>
+      </div>
+      <div class="week-input-row" id="inputRow">
+        <select class="week-select" id="weekSelect" onchange="selectWeek(this.value)">
+          <option value="8">妊娠8週</option>
+          <option value="9">妊娠9週</option>
+          <option value="10">妊娠10週</option>
+          <option value="11">妊娠11週</option>
+          <option value="12">妊娠12週</option>
+        </select>
+      </div>
+    </div>
+    <button class="nav-btn" id="nextBtn" onclick="changeWeek(1)">›</button>
+  </div>
+
+  <!-- Progress dots -->
+  <div class="progress-dots" id="progressDots"></div>
+</div>
+
+<!-- FETUS CARD -->
+<div class="fetus-card fade-in" id="fetusCard">
+  <div class="fetus-header">
+    <div class="fetus-svg-wrap" id="fetusSvgWrap"></div>
+    <div class="fetus-info">
+      <div class="fetus-week-label" id="fetusWeekLabel"></div>
+      <div class="fetus-size-text" id="fetusSizeText"></div>
+      <div class="fetus-mm" id="fetusMm"></div>
+    </div>
+  </div>
+  <div class="fetus-desc" id="fetusDesc"></div>
+</div>
+
+<!-- HEALTH ADVICE -->
+<div class="section-title">💗 今週の体調管理</div>
+<div class="info-card">
+  <div class="info-card-title">
+    <div class="icon-badge badge-health">🩺</div>
+    今週の体調アドバイス
+  </div>
+  <div id="healthAdvice"></div>
+</div>
+
+<!-- NUTRITION -->
+<div class="section-title">🥦 今週の栄養・食事</div>
+<div class="info-card">
+  <div class="info-card-title">
+    <div class="icon-badge badge-food">🍽️</div>
+    積極的に摂りたい栄養
+  </div>
+  <div id="nutritionAdvice"></div>
+</div>
+
+<!-- FOOTER -->
+<div class="app-footer">
+  ※ このアプリの情報は一般的なガイドラインに基づくものです。<br>
+  体調の変化や不安なことは、必ず担当医に相談してください。
+</div>
+
+<script>
+// ════════════════════════════════════════
+// DATA
+// ════════════════════════════════════════
+const weekData = {
+  8: {
+    label: '妊娠8週目',
+    sizeTitle: '🍇 ラズベリーと同じくらい',
+    sizeMm: '頭殿長 約1.6cm ・ 体重 約1g',
+    desc: 'このころ赤ちゃんの心臓はもうしっかり動いています。腕や脚のつぼみが芽生え、指の形もできはじめています。まだエビのような形ですが、確実に"人のかたち"へと成長中🌿',
+    svg: `<svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+      <!-- glow -->
+      <circle cx="36" cy="40" r="22" fill="rgba(252,228,236,0.6)"/>
+      <!-- body -->
+      <ellipse cx="36" cy="42" rx="12" ry="16" fill="#f8bbd0"/>
+      <!-- head -->
+      <ellipse cx="36" cy="26" rx="13" ry="13" fill="#f8bbd0"/>
+      <!-- face -->
+      <ellipse cx="32" cy="25" rx="2.5" ry="2.5" fill="#e879a0" opacity="0.5"/>
+      <ellipse cx="40" cy="25" rx="2.5" ry="2.5" fill="#e879a0" opacity="0.5"/>
+      <path d="M33 31 Q36 33 39 31" stroke="#e879a0" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <!-- tiny arm buds -->
+      <ellipse cx="24" cy="42" rx="4" ry="3" fill="#f48fb1" transform="rotate(-20,24,42)"/>
+      <ellipse cx="48" cy="42" rx="4" ry="3" fill="#f48fb1" transform="rotate(20,48,42)"/>
+      <!-- tail -->
+      <path d="M36 57 Q40 63 36 67" stroke="#f48fb1" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <!-- cheeks -->
+      <ellipse cx="29" cy="30" rx="3" ry="2" fill="#f06292" opacity="0.3"/>
+      <ellipse cx="43" cy="30" rx="3" ry="2" fill="#f06292" opacity="0.3"/>
+      <!-- sparkles -->
+      <text x="10" y="18" font-size="8" opacity="0.6">✨</text>
+      <text x="52" y="15" font-size="7" opacity="0.5">⭐</text>
+    </svg>`,
+    health: [
+      { title: '悪阻ピーク期', text: '<strong>つわりが最もつらい</strong>時期です。無理せず食べられるものを少量ずつ。冷たい麺類やクラッカーが食べやすい方も多いです。' },
+      { title: 'とにかく休む', text: '眠気や倦怠感が強い時期。<strong>昼寝や早寝</strong>を積極的に。家事は最低限でOK。夫のサポートが大切な時期です。' },
+      { title: 'ストレス回避', text: '赤ちゃんの臓器が急発達中。<strong>強いにおいや煙草の煙</strong>を避け、できるだけ穏やかに過ごしましょう。' },
+    ],
+    nutrition: [
+      { title: '葉酸', text: '<strong>葉酸（400μg/日）</strong>が最も大切な時期。神経管の形成に不可欠です。ほうれん草・ブロッコリー・サプリメントで補いましょう。' },
+      { title: '炭水化物', text: 'つわりで食べられないときも<strong>炭水化物だけでもOK</strong>。ご飯やうどんなど消化のよいものを無理なく。' },
+      { title: '水分', text: 'こまめに<strong>水分を補給</strong>しましょう。麦茶・白湯・スポーツドリンク（薄め）が飲みやすいです。カフェインは控えめに。' },
+    ]
+  },
+  9: {
+    label: '妊娠9週目',
+    sizeTitle: '🍇 ぶどう1粒と同じくらい',
+    sizeMm: '頭殿長 約2.3cm ・ 体重 約2g',
+    desc: '赤ちゃんの顔が少しずつ整ってきます。目・耳・鼻の原型ができ、手足の指も分かれはじめています。心臓は1分間に約170回も元気に鼓動しています💓',
+    svg: `<svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="36" cy="40" r="22" fill="rgba(252,228,236,0.5)"/>
+      <!-- body -->
+      <ellipse cx="36" cy="44" rx="11" ry="15" fill="#f8bbd0"/>
+      <!-- head -->
+      <circle cx="36" cy="26" r="14" fill="#f8bbd0"/>
+      <!-- eyes -->
+      <ellipse cx="31.5" cy="24" rx="3" ry="3.5" fill="#6d3b5b" opacity="0.7"/>
+      <ellipse cx="40.5" cy="24" rx="3" ry="3.5" fill="#6d3b5b" opacity="0.7"/>
+      <circle cx="32.5" cy="23" r="1" fill="white"/>
+      <circle cx="41.5" cy="23" r="1" fill="white"/>
+      <!-- mouth -->
+      <path d="M33 31 Q36 34 39 31" stroke="#e879a0" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <!-- arms -->
+      <path d="M25 44 Q18 48 17 54" stroke="#f48fb1" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M47 44 Q54 48 55 54" stroke="#f48fb1" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <!-- tiny fingers suggestion -->
+      <circle cx="16" cy="55" r="2.5" fill="#f48fb1"/>
+      <circle cx="54" cy="55" r="2.5" fill="#f48fb1"/>
+      <!-- leg buds -->
+      <ellipse cx="31" cy="57" rx="5" ry="4" fill="#f48fb1" transform="rotate(-10,31,57)"/>
+      <ellipse cx="41" cy="57" rx="5" ry="4" fill="#f48fb1" transform="rotate(10,41,57)"/>
+      <!-- cheeks -->
+      <ellipse cx="28" cy="30" rx="3.5" ry="2.5" fill="#f06292" opacity="0.3"/>
+      <ellipse cx="44" cy="30" rx="3.5" ry="2.5" fill="#f06292" opacity="0.3"/>
+      <text x="8" y="16" font-size="9" opacity="0.5">💕</text>
+      <text x="53" y="13" font-size="7" opacity="0.5">✨</text>
+    </svg>`,
+    health: [
+      { title: '口腔ケアを念入りに', text: 'ホルモンの影響で<strong>歯茎が敏感</strong>になります。柔らかい歯ブラシで優しく磨き、歯科検診もこの時期に受けておきましょう。' },
+      { title: '入浴は短めに', text: '長い入浴や熱いお湯は体に負担がかかります。<strong>38〜39℃のぬるめのお湯で10〜15分</strong>を目安に。のぼせ注意。' },
+      { title: '軽いウォーキング', text: 'つわりが落ち着いている日は<strong>10〜15分の散歩</strong>もOK。無理せず、気持ち良い程度で。激しい運動は避けて。' },
+    ],
+    nutrition: [
+      { title: 'カルシウム', text: '<strong>カルシウム（650mg/日）</strong>は赤ちゃんの骨格形成に不可欠。牛乳・ヨーグルト・小魚・大豆製品を意識して摂りましょう。' },
+      { title: 'ビタミンD', text: '<strong>ビタミンD</strong>はカルシウムの吸収を助けます。鮭・きのこ類・卵黄に多く含まれます。日光浴も少し意識して。' },
+      { title: '亜鉛', text: '<strong>亜鉛</strong>は細胞分裂に重要。牡蠣・牛肉・豆腐・ナッツに豊富です。免疫力維持にも役立ちます。' },
+    ]
+  },
+  10: {
+    label: '妊娠10週目',
+    sizeTitle: '🍓 いちごと同じくらい',
+    sizeMm: '頭殿長 約3.1cm ・ 体重 約4g',
+    desc: 'この週から「胎芽」から「胎児（フィータス）」へ呼び名が変わります。指の水かきが消え、はっきり指が分かれてきます。エコーでは小さな手足をひらひらさせる姿が見えることも🌟',
+    svg: `<svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="36" cy="40" r="23" fill="rgba(252,228,236,0.4)"/>
+      <!-- body -->
+      <ellipse cx="36" cy="46" rx="12" ry="16" fill="#f8bbd0"/>
+      <!-- head -->
+      <circle cx="36" cy="25" r="15" fill="#f8bbd0"/>
+      <!-- eyes -->
+      <ellipse cx="31" cy="23" rx="3.2" ry="3.8" fill="#5d3352" opacity="0.8"/>
+      <ellipse cx="41" cy="23" rx="3.2" ry="3.8" fill="#5d3352" opacity="0.8"/>
+      <circle cx="32" cy="22" r="1.2" fill="white"/>
+      <circle cx="42" cy="22" r="1.2" fill="white"/>
+      <!-- nose -->
+      <ellipse cx="36" cy="28" rx="1.5" ry="1" fill="#e879a0" opacity="0.4"/>
+      <!-- mouth -->
+      <path d="M33 32 Q36 35 39 32" stroke="#e879a0" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <!-- arms with fingers -->
+      <path d="M24 45 Q16 50 13 57" stroke="#f48fb1" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <path d="M48 45 Q56 50 59 57" stroke="#f48fb1" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <!-- hand fingers -->
+      <circle cx="11" cy="58" r="2.5" fill="#f8bbd0"/>
+      <circle cx="13" cy="61" r="2.2" fill="#f8bbd0"/>
+      <circle cx="57" cy="58" r="2.5" fill="#f8bbd0"/>
+      <circle cx="59" cy="61" r="2.2" fill="#f8bbd0"/>
+      <!-- legs -->
+      <path d="M30 61 Q27 67 28 71" stroke="#f48fb1" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <path d="M42 61 Q45 67 44 71" stroke="#f48fb1" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <!-- cheeks -->
+      <ellipse cx="27" cy="29" rx="4" ry="2.5" fill="#f06292" opacity="0.25"/>
+      <ellipse cx="45" cy="29" rx="4" ry="2.5" fill="#f06292" opacity="0.25"/>
+      <!-- ear buds -->
+      <ellipse cx="21" cy="25" rx="2.5" ry="3" fill="#f48fb1"/>
+      <ellipse cx="51" cy="25" rx="2.5" ry="3" fill="#f48fb1"/>
+      <text x="6" y="14" font-size="9" opacity="0.5">🌟</text>
+      <text x="54" y="11" font-size="8" opacity="0.5">💫</text>
+    </svg>`,
+    health: [
+      { title: '母子手帳の取得', text: 'まだの方はお住まいの市区町村の窓口で<strong>母子健康手帳</strong>を受け取りましょう。各種補助券も入っています。' },
+      { title: '出産施設の検討を', text: '産院の<strong>分娩予約は早めに</strong>。人気の施設は妊娠初期で埋まることも。気になる施設があれば問い合わせを始めましょう。' },
+      { title: 'つわり対策を工夫', text: 'まだつわりが続く方は<strong>空腹を避ける</strong>のが鍵。ベッドサイドにクラッカーを置き、起き上がる前に少し食べると楽になる場合があります。' },
+    ],
+    nutrition: [
+      { title: 'タンパク質', text: '<strong>タンパク質（+10g/日）</strong>は赤ちゃんの組織づくりに必須。鶏むね肉・魚・豆腐・卵など消化しやすいものを毎食に少量ずつ。' },
+      { title: '鉄分', text: '血液量が増えていくため<strong>鉄分</strong>が重要に。ほうれん草・小松菜・レバー・あさりが豊富。ビタミンCと一緒に摂ると吸収率アップ。' },
+      { title: 'オメガ3', text: '<strong>DHA・EPA</strong>は赤ちゃんの脳と目の発達に関わります。サバ・イワシ・さんまなど青魚を週2〜3回意識して。水銀の多い魚は避けて。' },
+    ]
+  },
+  11: {
+    label: '妊娠11週目',
+    sizeTitle: '🍋 ライムと同じくらい',
+    sizeMm: '頭殿長 約4.1cm ・ 体重 約7g',
+    desc: '赤ちゃんの顔はより人間らしくなり、まぶた・爪・髪の毛の原型も形成中。手足をよく動かすようになり、エコーで確認できることも。体内の臓器もほぼ完成に近づいています🌿',
+    svg: `<svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="36" cy="40" r="24" fill="rgba(252,228,236,0.35)"/>
+      <!-- body -->
+      <ellipse cx="36" cy="48" rx="12" ry="17" fill="#f8bbd0"/>
+      <!-- head -->
+      <circle cx="36" cy="23" r="16" fill="#f8bbd0"/>
+      <!-- hair suggestions -->
+      <path d="M22 18 Q24 10 36 8 Q48 10 50 18" stroke="#c5a0b8" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <!-- eyes open with lashes -->
+      <ellipse cx="30.5" cy="22" rx="3.5" ry="4" fill="#4a2a42" opacity="0.85"/>
+      <ellipse cx="41.5" cy="22" rx="3.5" ry="4" fill="#4a2a42" opacity="0.85"/>
+      <circle cx="31.5" cy="21" r="1.3" fill="white"/>
+      <circle cx="42.5" cy="21" r="1.3" fill="white"/>
+      <!-- lashes -->
+      <path d="M27.5 19 Q28.5 16.5 30 18" stroke="#4a2a42" stroke-width="1" fill="none"/>
+      <path d="M38.5 19 Q39.5 16.5 41 18" stroke="#4a2a42" stroke-width="1" fill="none"/>
+      <!-- nose -->
+      <circle cx="35" cy="27" r="1.3" fill="#e879a0" opacity="0.35"/>
+      <circle cx="38" cy="27" r="1.3" fill="#e879a0" opacity="0.35"/>
+      <!-- mouth smile -->
+      <path d="M32 32 Q36 36 40 32" stroke="#e879a0" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- ears -->
+      <ellipse cx="20" cy="23" rx="3" ry="4" fill="#f48fb1"/>
+      <ellipse cx="52" cy="23" rx="3" ry="4" fill="#f48fb1"/>
+      <!-- arms -->
+      <path d="M24 46 Q15 52 11 60" stroke="#f48fb1" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <path d="M48 46 Q57 52 61 60" stroke="#f48fb1" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <!-- hands with fingers -->
+      <circle cx="9"  cy="61" r="3" fill="#f8bbd0"/>
+      <circle cx="12" cy="65" r="2.5" fill="#f8bbd0"/>
+      <circle cx="62" cy="61" r="3" fill="#f8bbd0"/>
+      <circle cx="59" cy="65" r="2.5" fill="#f8bbd0"/>
+      <!-- legs -->
+      <path d="M29 63 Q25 69 25 73" stroke="#f48fb1" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M43 63 Q47 69 47 73" stroke="#f48fb1" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <!-- cheeks -->
+      <ellipse cx="25" cy="28" rx="4.5" ry="3" fill="#f06292" opacity="0.2"/>
+      <ellipse cx="47" cy="28" rx="4.5" ry="3" fill="#f06292" opacity="0.2"/>
+      <text x="4"  y="12" font-size="10" opacity="0.5">💕</text>
+      <text x="55" y="10" font-size="9"  opacity="0.5">🌸</text>
+    </svg>`,
+    health: [
+      { title: 'スキンケアを見直す', text: 'ホルモン変化で肌が敏感になります。<strong>無香料・低刺激のスキンケア</strong>に切り替えて。妊娠線ケアのクリームも早めに始めると安心です。' },
+      { title: '軽い運動を習慣に', text: '体調が落ち着いてきたら<strong>マタニティヨガや散歩</strong>を日課に。体重管理と腰痛予防になります。転倒には十分注意を。' },
+      { title: '検診の準備', text: '11〜13週頃に<strong>NT検査（首のむくみ）</strong>が受けられる時期です。必要な方は産院に早めに確認しておきましょう。' },
+    ],
+    nutrition: [
+      { title: '食物繊維', text: '<strong>食物繊維</strong>で便秘を予防しましょう。さつまいも・ごぼう・わかめ・りんごが効果的。水分と一緒に摂るのがポイントです。' },
+      { title: 'マグネシウム', text: '<strong>マグネシウム</strong>は筋肉の働きを助け、こむら返りの予防にも。バナナ・ほうれん草・アーモンドに豊富です。' },
+      { title: 'ビタミンC', text: '<strong>ビタミンC</strong>は鉄分の吸収を高め、免疫力アップにも。ブロッコリー・パプリカ・いちご・キウイがおすすめです。' },
+    ]
+  },
+  12: {
+    label: '妊娠12週目',
+    sizeTitle: '🍑 プラム（すもも）と同じくらい',
+    sizeMm: '頭殿長 約5.4cm ・ 体重 約14g',
+    desc: 'いよいよ妊娠初期の最終週！赤ちゃんはほぼ全身の器官が形成され、安定期への入口が見えてきます。爪・毛髪・生殖器の区別もわかり始め、個性ある存在にぐっと近づいています🎀',
+    svg: `<svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="36" cy="39" r="25" fill="rgba(252,228,236,0.3)"/>
+      <!-- body -->
+      <ellipse cx="36" cy="49" rx="13" ry="18" fill="#f8bbd0"/>
+      <!-- head -->
+      <circle cx="36" cy="22" r="17" fill="#f8bbd0"/>
+      <!-- hair -->
+      <path d="M20 16 Q22 7 36 5 Q50 7 52 16" stroke="#c5a0b8" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <!-- eyes -->
+      <ellipse cx="30" cy="21" rx="4" ry="4.5" fill="#3d2040" opacity="0.9"/>
+      <ellipse cx="42" cy="21" rx="4" ry="4.5" fill="#3d2040" opacity="0.9"/>
+      <circle cx="31.2" cy="19.5" r="1.5" fill="white"/>
+      <circle cx="43.2" cy="19.5" r="1.5" fill="white"/>
+      <!-- lashes -->
+      <path d="M27 17.5 L28.5 14.5" stroke="#3d2040" stroke-width="1.2" stroke-linecap="round"/>
+      <path d="M30 16.5 L30.5 13" stroke="#3d2040" stroke-width="1.2" stroke-linecap="round"/>
+      <path d="M39 16.5 L39.5 13" stroke="#3d2040" stroke-width="1.2" stroke-linecap="round"/>
+      <path d="M42 17.5 L43.5 14.5" stroke="#3d2040" stroke-width="1.2" stroke-linecap="round"/>
+      <!-- nose -->
+      <circle cx="34.5" cy="26" r="1.5" fill="#e879a0" opacity="0.3"/>
+      <circle cx="38" cy="26" r="1.5" fill="#e879a0" opacity="0.3"/>
+      <!-- smile -->
+      <path d="M31.5 31 Q36 35.5 40.5 31" stroke="#e879a0" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- ears -->
+      <ellipse cx="19" cy="22" rx="3.2" ry="4.5" fill="#f48fb1"/>
+      <ellipse cx="53" cy="22" rx="3.2" ry="4.5" fill="#f48fb1"/>
+      <!-- arms detailed -->
+      <path d="M23 46 Q13 53 9 62" stroke="#f48fb1" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M49 46 Q59 53 63 62" stroke="#f48fb1" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <!-- hands -->
+      <circle cx="7"  cy="63" r="3.5" fill="#f8bbd0"/>
+      <circle cx="10" cy="67" r="3"   fill="#f8bbd0"/>
+      <circle cx="64" cy="63" r="3.5" fill="#f8bbd0"/>
+      <circle cx="61" cy="67" r="3"   fill="#f8bbd0"/>
+      <!-- legs -->
+      <path d="M28 65 Q23 71 22 76" stroke="#f48fb1" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+      <path d="M44 65 Q49 71 50 76" stroke="#f48fb1" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+      <!-- cheeks glow -->
+      <ellipse cx="24" cy="27" rx="5" ry="3.5" fill="#f06292" opacity="0.2"/>
+      <ellipse cx="48" cy="27" rx="5" ry="3.5" fill="#f06292" opacity="0.2"/>
+      <!-- crown / milestone -->
+      <text x="29" y="3" font-size="14" opacity="0.75">👑</text>
+      <text x="4"  y="13" font-size="9" opacity="0.5">🎀</text>
+      <text x="56" y="11" font-size="9" opacity="0.5">⭐</text>
+    </svg>`,
+    health: [
+      { title: '安定期まであと少し！', text: '流産リスクが大幅に下がる<strong>安定期（14週〜）</strong>がもうすぐ。妊娠報告のタイミングを職場や友人に考え始めましょう。' },
+      { title: '葉酸を継続して', text: '<strong>葉酸の摂取は16週まで継続</strong>が推奨されています。サプリも忘れずに。鉄・カルシウムも合わせて摂れるマタニティサプリも便利です。' },
+      { title: '体重の見直し', text: 'つわりが落ち着いて食欲が戻る時期。<strong>急な体重増加に注意</strong>。1週間に0.5kg以内の増加が目安です。' },
+    ],
+    nutrition: [
+      { title: 'DHA・EPA', text: '<strong>DHA（1日200mg以上）</strong>は赤ちゃんの脳神経の発育に直結します。アジ・サバ・イワシを積極的に。魚が苦手な方はサプリも活用を。' },
+      { title: 'ヨウ素', text: '<strong>ヨウ素</strong>は甲状腺ホルモンの材料で、赤ちゃんの脳発達に不可欠。わかめ・昆布・のり・魚介類から摂れます。ただし過剰摂取に注意。' },
+      { title: 'ビタミンB群', text: '<strong>ビタミンB6・B12</strong>は貧血予防と赤ちゃんの神経発達に大切。鶏肉・バナナ・卵・乳製品・豆類をバランスよく。' },
+    ]
+  }
+};
+
+// ════════════════════════════════════════
+// STATE & RENDER
+// ════════════════════════════════════════
+const MIN_WEEK = 8, MAX_WEEK = 12;
+let currentWeek = 8;
+let inputVisible = false;
+
+function render() {
+  const d = weekData[currentWeek];
+
+  // Week display
+  document.getElementById('weekDisplay').innerHTML = `${currentWeek}<span> 週</span>`;
+
+  // Progress dots
+  const dots = document.getElementById('progressDots');
+  dots.innerHTML = '';
+  for (let w = MIN_WEEK; w <= MAX_WEEK; w++) {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (w === currentWeek ? ' active' : '');
+    dots.appendChild(dot);
+  }
+
+  // Buttons
+  document.getElementById('prevBtn').disabled = (currentWeek === MIN_WEEK);
+  document.getElementById('nextBtn').disabled = (currentWeek === MAX_WEEK);
+
+  // Select sync
+  document.getElementById('weekSelect').value = currentWeek;
+
+  // Fetus card - animate
+  const card = document.getElementById('fetusCard');
+  card.classList.remove('fade-in');
+  void card.offsetWidth;
+  card.classList.add('fade-in');
+
+  document.getElementById('fetusWeekLabel').textContent = d.label;
+  document.getElementById('fetusSvgWrap').innerHTML = d.svg;
+  document.getElementById('fetusSizeText').textContent = d.sizeTitle;
+  document.getElementById('fetusMm').textContent = d.sizeMm;
+  document.getElementById('fetusDesc').textContent = d.desc;
+
+  // Health advice
+  const ha = document.getElementById('healthAdvice');
+  ha.innerHTML = d.health.map((h, i) => `
+    <div class="advice-item">
+      <div class="advice-num">${i+1}</div>
+      <div class="advice-text">${h.text}</div>
+    </div>
+  `).join('');
+
+  // Nutrition
+  const na = document.getElementById('nutritionAdvice');
+  na.innerHTML = d.nutrition.map((n, i) => `
+    <div class="advice-item">
+      <div class="advice-num badge-food-num">${i+1}</div>
+      <div class="advice-text food-text">${n.text}</div>
+    </div>
+  `).join('');
+}
+
+function changeWeek(delta) {
+  const next = currentWeek + delta;
+  if (next < MIN_WEEK || next > MAX_WEEK) return;
+  currentWeek = next;
+  render();
+}
+
+function selectWeek(val) {
+  currentWeek = parseInt(val);
+  render();
+}
+
+function toggleInput() {
+  inputVisible = !inputVisible;
+  const row = document.getElementById('inputRow');
+  row.classList.toggle('visible', inputVisible);
+}
+
+// Init
+render();
+</script>
+</body>
+</html>
