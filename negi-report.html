@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>現場日報</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #f0f7f0;
+    font-family: 'Hiragino Maru Gothic Pro', 'BIZ UDPGothic', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 48px;
+  }
+  .otsukare {
+    color: #7aab7a;
+    font-size: 13px;
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    margin-bottom: 20px;
+    opacity: 0.85;
+  }
+  h1 { color: #3a7a3a; font-size: 20px; font-weight: 600; margin-bottom: 24px; letter-spacing: 0.05em; }
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 2px 12px rgba(80,140,80,0.10);
+    margin-bottom: 16px;
+  }
+  .section-title { color: #5a9a5a; font-size: 12px; font-weight: 600; letter-spacing: 0.1em; margin-bottom: 10px; }
+  input[type="date"] {
+    width: 100%; padding: 12px 14px;
+    border: 1.5px solid #c8e6c8; border-radius: 10px;
+    font-size: 16px; color: #2d5a2d; background: #f6fbf6; outline: none;
+  }
+  input[type="date"]:focus { border-color: #5a9a5a; }
+  .name-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .name-btn {
+    padding: 10px 4px; border: 1.5px solid #c8e6c8; border-radius: 10px;
+    background: #f6fbf6; color: #2d5a2d; font-size: 14px; cursor: pointer; text-align: center; transition: all 0.15s;
+  }
+  .name-btn.selected { background: #4a8a4a; color: #fff; border-color: #4a8a4a; }
+  .dept-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .dept-btn {
+    padding: 12px 4px; border: 1.5px solid #c8e6c8; border-radius: 10px;
+    background: #f6fbf6; color: #2d5a2d; font-size: 15px; font-weight: 600;
+    cursor: pointer; text-align: center; transition: all 0.15s; position: relative;
+  }
+  .dept-btn.selected { background: #4a8a4a; color: #fff; border-color: #4a8a4a; }
+  .dept-btn .badge {
+    display: block; font-size: 11px; font-weight: 400;
+    color: #7aab7a; margin-top: 2px;
+  }
+  .dept-btn.selected .badge { color: #c8e6c8; }
+  .work-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0; border-bottom: 1px solid #e8f5e8;
+  }
+  .work-row:last-child { border-bottom: none; }
+  .work-label { color: #2d5a2d; font-size: 15px; font-weight: 500; flex: 1; }
+  .time-input-wrap { display: flex; align-items: center; gap: 6px; }
+  .minus-btn, .plus-btn {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1.5px solid #c8e6c8; background: #f6fbf6; color: #4a8a4a;
+    font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s;
+  }
+  .minus-btn:active, .plus-btn:active { background: #c8e6c8; }
+  .time-val {
+    width: 48px; text-align: center; font-size: 16px; font-weight: 600;
+    color: #2d5a2d; border: 1.5px solid #c8e6c8; border-radius: 8px;
+    padding: 6px 4px; background: #f6fbf6; outline: none;
+  }
+  .time-val:focus { border-color: #5a9a5a; }
+  .unit { color: #7aab7a; font-size: 13px; }
+  .summary-divider { border-top: 1.5px solid #c8e6c8; margin-top: 14px; padding-top: 12px; }
+  .summary-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 4px 0; font-size: 14px; color: #5a9a5a;
+  }
+  .summary-row.grand {
+    font-size: 15px; font-weight: 700; color: #3a7a3a;
+    border-top: 1px dashed #c8e6c8; margin-top: 4px; padding-top: 8px;
+  }
+  .submit-btn {
+    width: 100%; max-width: 420px; padding: 16px;
+    background: #4a8a4a; color: #fff; border: none; border-radius: 14px;
+    font-size: 17px; font-weight: 600; letter-spacing: 0.05em; cursor: pointer;
+    margin-top: 8px; box-shadow: 0 4px 12px rgba(74,138,74,0.25); transition: background 0.2s;
+  }
+  .submit-btn:active { background: #3a7a3a; }
+  .done-msg {
+    display: none; background: #e8f5e8; border-radius: 12px; padding: 20px;
+    text-align: center; color: #3a7a3a; font-size: 15px;
+    width: 100%; max-width: 420px; margin-top: 8px;
+  }
+  .done-msg.show { display: block; }
+  .lang-bar { display: flex; gap: 8px; margin-bottom: 20px; }
+  .lang-btn {
+    padding: 6px 14px; border: 1.5px solid #c8e6c8; border-radius: 20px;
+    background: #f6fbf6; color: #5a9a5a; font-size: 13px; cursor: pointer; transition: all 0.15s;
+  }
+  .lang-btn.active { background: #4a8a4a; color: #fff; border-color: #4a8a4a; }
+  .no-dept { color: #aaa; font-size: 14px; text-align: center; padding: 16px 0; }
+</style>
+</head>
+<body>
+
+<p class="otsukare" id="txt-otsukare">今日もおつかれさまでした</p>
+<h1 id="txt-title">現場日報</h1>
+
+<div class="lang-bar">
+  <button class="lang-btn active" onclick="setLang('ja')">日本語</button>
+  <button class="lang-btn" onclick="setLang('id')">Indonesia</button>
+  <button class="lang-btn" onclick="setLang('vi')">Tiếng Việt</button>
+</div>
+
+<div class="card">
+  <div class="section-title" id="txt-date-label">日付</div>
+  <input type="date" id="date-input">
+</div>
+
+<div class="card">
+  <div class="section-title" id="txt-name-label">名前</div>
+  <div class="name-grid" id="name-grid"></div>
+</div>
+
+<div class="card">
+  <div class="section-title" id="txt-dept-label">部門</div>
+  <div class="dept-grid" id="dept-grid"></div>
+</div>
+
+<div class="card">
+  <div class="section-title" id="txt-work-label">作業時間</div>
+  <div id="work-rows"></div>
+  <div id="summary-area"></div>
+</div>
+
+<button class="submit-btn" id="submit-btn" onclick="doSubmit()">送信する</button>
+<div class="done-msg" id="done-msg">✅ 送信しました！</div>
+
+<script>
+const names = [
+  '佐々木久美子','阿部歩美','鹿角ひとみ','佐藤伸江','佐藤和子','横山朋美',
+  'サリー','メイサ','ブンガ','インタン','マリナ','エフィ',
+  '応援実習生','一日バイト','亀井美沙','浅野晃司','山内健','菅原大暉',
+  '氏家恵','菅原博子','武田悟郎','中沢琢也','社員応援'
+];
+
+const depts = {
+  ja: ['小ねぎ','青ねぎ','白ねぎ'],
+  id: ['Daun Bawang Kecil','Daun Bawang Hijau','Daun Bawang Putih'],
+  vi: ['Hành lá nhỏ','Hành lá xanh','Hành lá trắng'],
+};
+
+const workItems = {
+  ja: ['収穫・洗い','草取り','調整','出荷','その他'],
+  id: ['Panen & Cuci','Cabut Rumput','Sortir','Pengiriman','Lainnya'],
+  vi: ['Thu hoạch & Rửa','Nhổ cỏ','Phân loại','Xuất hàng','Khác'],
+};
+
+const labels = {
+  ja: { otsukare:'今日もおつかれさまでした', title:'現場日報', date:'日付', name:'名前', dept:'部門', work:'作業時間', submit:'送信する', done:'✅ 送信しました！', nodept:'部門を選んでください' },
+  id: { otsukare:'Terima kasih atas kerja keras Anda hari ini', title:'Laporan Harian', date:'Tanggal', name:'Nama', dept:'Divisi', work:'Jam Kerja', submit:'Kirim', done:'✅ Berhasil dikirim!', nodept:'Pilih divisi' },
+  vi: { otsukare:'Cảm ơn bạn đã làm việc chăm chỉ hôm nay', title:'Báo cáo hàng ngày', date:'Ngày', name:'Tên', dept:'Bộ phận', work:'Giờ làm việc', submit:'Gửi', done:'✅ Đã gửi thành công!', nodept:'Chọn bộ phận' },
+};
+
+let lang = 'ja';
+let selectedName = '';
+let selectedDeptIdx = -1;
+const allWorkValues = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]];
+
+function init() {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth()+1).padStart(2,'0');
+  const dd = String(today.getDate()).padStart(2,'0');
+  const todayStr = `${yyyy}-${mm}-${dd}`;
+  document.getElementById('date-input').value = todayStr;
+  document.getElementById('date-input').max = todayStr;
+  renderNames();
+  renderDepts();
+  renderWork();
+}
+
+function renderNames() {
+  const grid = document.getElementById('name-grid');
+  grid.innerHTML = '';
+  names.forEach(n => {
+    const btn = document.createElement('button');
+    btn.className = 'name-btn' + (n === selectedName ? ' selected' : '');
+    btn.textContent = n;
+    btn.onclick = () => { selectedName = n; renderNames(); };
+    grid.appendChild(btn);
+  });
+}
+
+function renderDepts() {
+  const grid = document.getElementById('dept-grid');
+  grid.innerHTML = '';
+  depts[lang].forEach((d, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'dept-btn' + (i === selectedDeptIdx ? ' selected' : '');
+    const t = allWorkValues[i].reduce((a,b)=>a+b,0);
+    const badge = t > 0 ? `<span class="badge">${t}h</span>` : '<span class="badge"></span>';
+    btn.innerHTML = d + badge;
+    btn.onclick = () => { selectedDeptIdx = i; renderDepts(); renderWork(); };
+    grid.appendChild(btn);
+  });
+}
+
+function renderWork() {
+  const container = document.getElementById('work-rows');
+  container.innerHTML = '';
+  if (selectedDeptIdx < 0) {
+    container.innerHTML = `<p class="no-dept">${labels[lang].nodept}</p>`;
+    document.getElementById('summary-area').innerHTML = '';
+    return;
+  }
+  const vals = allWorkValues[selectedDeptIdx];
+  workItems[lang].forEach((w, i) => {
+    const row = document.createElement('div');
+    row.className = 'work-row';
+    row.innerHTML = `
+      <span class="work-label">${w}</span>
+      <div class="time-input-wrap">
+        <button class="minus-btn" onclick="changeTime(${i},-0.25)">－</button>
+        <input class="time-val" type="number" min="0" max="12" step="0.25"
+          value="${vals[i]}" id="time-${i}"
+          oninput="allWorkValues[${selectedDeptIdx}][${i}]=parseFloat(this.value)||0; renderSummary(); renderDepts();">
+        <button class="plus-btn" onclick="changeTime(${i},0.25)">＋</button>
+        <span class="unit">h</span>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+  renderSummary();
+}
+
+function changeTime(idx, delta) {
+  if (selectedDeptIdx < 0) return;
+  allWorkValues[selectedDeptIdx][idx] = Math.max(0, Math.round((allWorkValues[selectedDeptIdx][idx] + delta) * 100) / 100);
+  document.getElementById(`time-${idx}`).value = allWorkValues[selectedDeptIdx][idx];
+  renderSummary();
+  renderDepts();
+}
+
+function renderSummary() {
+  const area = document.getElementById('summary-area');
+  const deptJa = depts['ja'];
+  let grandTotal = 0;
+  let hasAny = false;
+  let html = '<div class="summary-divider">';
+  deptJa.forEach((d, i) => {
+    const t = Math.round(allWorkValues[i].reduce((a,b)=>a+b,0) * 100) / 100;
+    if (t > 0) {
+      hasAny = true;
+      grandTotal += t;
+      html += `<div class="summary-row"><span>${d}</span><span>${t}h</span></div>`;
+    }
+  });
+  if (hasAny) {
+    grandTotal = Math.round(grandTotal * 100) / 100;
+    html += `<div class="summary-row grand"><span>合計</span><span>${grandTotal}h</span></div>`;
+  }
+  html += '</div>';
+  area.innerHTML = hasAny ? html : '';
+}
+
+function setLang(l) {
+  lang = l;
+  document.querySelectorAll('.lang-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', ['ja','id','vi'][i] === l);
+  });
+  document.getElementById('txt-otsukare').textContent = labels[l].otsukare;
+  document.getElementById('txt-title').textContent = labels[l].title;
+  document.getElementById('txt-date-label').textContent = labels[l].date;
+  document.getElementById('txt-name-label').textContent = labels[l].name;
+  document.getElementById('txt-dept-label').textContent = labels[l].dept;
+  document.getElementById('txt-work-label').textContent = labels[l].work;
+  document.getElementById('submit-btn').textContent = labels[l].submit;
+  renderDepts();
+  renderWork();
+}
+
+function doSubmit() {
+  const date = document.getElementById('date-input').value;
+  if (!date) { alert('日付を選んでください'); return; }
+  if (!selectedName) { alert('名前を選んでください'); return; }
+  const grandTotal = allWorkValues.flat().reduce((a,b)=>a+b,0);
+  if (grandTotal === 0) { alert('作業時間を入力してください'); return; }
+
+  const data = {
+    date, name: selectedName,
+    小ねぎ_収穫洗い: allWorkValues[0][0], 小ねぎ_草取り: allWorkValues[0][1], 小ねぎ_調整: allWorkValues[0][2], 小ねぎ_出荷: allWorkValues[0][3], 小ねぎ_その他: allWorkValues[0][4],
+    青ねぎ_収穫洗い: allWorkValues[1][0], 青ねぎ_草取り: allWorkValues[1][1], 青ねぎ_調整: allWorkValues[1][2], 青ねぎ_出荷: allWorkValues[1][3], 青ねぎ_その他: allWorkValues[1][4],
+    白ねぎ_収穫洗い: allWorkValues[2][0], 白ねぎ_草取り: allWorkValues[2][1], 白ねぎ_調整: allWorkValues[2][2], 白ねぎ_出荷: allWorkValues[2][3], 白ねぎ_その他: allWorkValues[2][4],
+  };
+  console.log(data);
+
+  document.getElementById('done-msg').textContent = labels[lang].done;
+  document.getElementById('done-msg').classList.add('show');
+  document.getElementById('submit-btn').style.display = 'none';
+
+  setTimeout(() => {
+    selectedName = '';
+    selectedDeptIdx = -1;
+    allWorkValues[0] = [0,0,0,0,0];
+    allWorkValues[1] = [0,0,0,0,0];
+    allWorkValues[2] = [0,0,0,0,0];
+    document.getElementById('done-msg').classList.remove('show');
+    document.getElementById('submit-btn').style.display = 'block';
+    init();
+  }, 2000);
+}
+
+init();
+</script>
+</body>
+</html>
